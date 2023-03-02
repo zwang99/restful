@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Order_ProductDaoImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">shop_project_detail</a> &gt; <a href="index.source.html" class="el_package">com.example.shop_project_detail.dao</a> &gt; <span class="el_source">Order_ProductDaoImpl.java</span></div><h1>Order_ProductDaoImpl.java</h1><pre class="source lang-java linenums">package com.example.shop_project_detail.dao;
+
+import com.example.shop_project_detail.domain.entity.Order_Product;
+import com.example.shop_project_detail.domain.response.MostProfitProductResponse;
+import com.example.shop_project_detail.domain.response.MostSoldProductsResponse;
+import com.example.shop_project_detail.domain.response.TopThreeBuyerResponse;
+import org.hibernate.SQLQuery;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+@Repository
+<span class="fc" id="L19">public class Order_ProductDaoImpl implements Order_ProductDao{</span>
+    @Autowired
+    SessionFactory sessionFactory;
+
+    @Override
+    public void addNewOrderProduct(int order_id, int product_id, int purchased_quantity, float execution_retail_price, float execution_wholesale_price) {
+<span class="nc" id="L25">        Session session = sessionFactory.getCurrentSession();</span>
+<span class="nc" id="L26">        Order_Product order_product = new Order_Product();</span>
+<span class="nc" id="L27">        order_product.setOrder_id(order_id);</span>
+<span class="nc" id="L28">        order_product.setProduct_id(product_id);</span>
+<span class="nc" id="L29">        order_product.setPurchased_quantity(purchased_quantity);</span>
+<span class="nc" id="L30">        order_product.setExecution_retail_price(execution_retail_price);</span>
+<span class="nc" id="L31">        order_product.setExecution_wholesale_price(execution_wholesale_price);</span>
+<span class="nc" id="L32">        session.save(order_product);</span>
+<span class="nc" id="L33">    }</span>
+
+    @Override
+    public List&lt;Order_Product&gt; findOrderProductByOrderId(int order_id) {
+<span class="nc" id="L37">        Session session = sessionFactory.getCurrentSession();</span>
+<span class="nc" id="L38">        Query query = session.createQuery(&quot;FROM Order_Product where order_id = :order_id&quot;);</span>
+<span class="nc" id="L39">        query.setParameter(&quot;order_id&quot;, order_id);</span>
+<span class="nc" id="L40">        List&lt;Order_Product&gt; order_products = query.list();</span>
+<span class="nc" id="L41">        return order_products;</span>
+    }
+
+    @Override
+    public void removeOrderProductByOrderProductId(int order_product_id) {
+<span class="nc" id="L46">        Session session = sessionFactory.getCurrentSession();</span>
+<span class="nc" id="L47">        Query query = session.createQuery(&quot;DELETE FROM Order_Product WHERE order_product_id = :order_product_id&quot;);</span>
+<span class="nc" id="L48">        query.setParameter(&quot;order_product_id&quot;, order_product_id);</span>
+<span class="nc" id="L49">        query.executeUpdate();</span>
+<span class="nc" id="L50">    }</span>
+
+    @Override
+    public MostProfitProductResponse getMostProfitableProduct() {
+<span class="nc" id="L54">        Session session = sessionFactory.openSession();</span>
+<span class="nc" id="L55">        session.beginTransaction();</span>
+
+<span class="nc" id="L57">        String sql =</span>
+                &quot;SELECT &quot; +
+                        &quot;    Product.product_id, \n&quot; +
+                        &quot;    Product.name,\n&quot; +
+                        &quot;    SUM(Order_Product.execution_retail_price - Order_Product.execution_wholesale_price) AS profit\n&quot; +
+                        &quot;FROM \n&quot; +
+                        &quot;    Order_Product\n&quot; +
+                        &quot;    JOIN OrderTable ON Order_Product.order_id = OrderTable.order_id \n&quot; +
+                        &quot;    JOIN Product ON Order_Product.product_id = Product.product_id\n&quot; +
+                        &quot;WHERE \n&quot; +
+                        &quot;    OrderTable.order_status = 'Completed' \n&quot; +
+                        &quot;GROUP BY \n&quot; +
+                        &quot;    Product.product_id\n&quot; +
+                        &quot;ORDER BY \n&quot; +
+                        &quot;    profit DESC\n&quot; +
+                        &quot;LIMIT 1&quot;;
+
+<span class="nc" id="L74">        SQLQuery query = session.createSQLQuery(sql);</span>
+
+<span class="nc" id="L76">        List&lt;Object[]&gt; results = query.list();</span>
+
+<span class="nc" id="L78">        MostProfitProductResponse mostProfitProductResponse = new MostProfitProductResponse();</span>
+
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        for (Object[] result : results) {</span>
+<span class="nc" id="L81">            int productId = (int) result[0];</span>
+<span class="nc" id="L82">            String name = (String) result[1];</span>
+<span class="nc" id="L83">            Double profit = (Double) result[2];</span>
+
+<span class="nc" id="L85">            mostProfitProductResponse.setProduct_id(productId);</span>
+<span class="nc" id="L86">            mostProfitProductResponse.setProdcut_name(name);</span>
+<span class="nc" id="L87">            mostProfitProductResponse.setProfit(profit.floatValue());</span>
+<span class="nc" id="L88">        }</span>
+
+<span class="nc" id="L90">        session.getTransaction().commit();</span>
+<span class="nc" id="L91">        session.close();</span>
+<span class="nc" id="L92">        return mostProfitProductResponse;</span>
+    }
+
+    @Override
+    public List&lt;MostSoldProductsResponse&gt; getTop3MostSoldProducts() {
+<span class="nc" id="L97">        Session session = sessionFactory.openSession();</span>
+<span class="nc" id="L98">        session.beginTransaction();</span>
+
+<span class="nc" id="L100">        String sql = &quot;SELECT \n&quot; +</span>
+                &quot;    Product.product_id, \n&quot; +
+                &quot;    Product.name,\n&quot; +
+                &quot;    SUM(Order_Product.purchased_quantity) AS sold_quantity\n&quot; +
+                &quot;FROM \n&quot; +
+                &quot;    Order_Product\n&quot; +
+                &quot;    JOIN OrderTable ON Order_Product.order_id = OrderTable.order_id \n&quot; +
+                &quot;    JOIN Product ON Order_Product.product_id = Product.product_id\n&quot; +
+                &quot;WHERE \n&quot; +
+                &quot;    OrderTable.order_status = 'Completed' \n&quot; +
+                &quot;GROUP BY \n&quot; +
+                &quot;    Product.product_id\n&quot; +
+                &quot;ORDER BY \n&quot; +
+                &quot;    sold_quantity DESC\n&quot; +
+                &quot;LIMIT 3\n&quot;;
+<span class="nc" id="L115">        List&lt;MostSoldProductsResponse&gt; mostSoldProductsResponses = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L117">        SQLQuery query = session.createSQLQuery(sql);</span>
+<span class="nc" id="L118">        List&lt;Object[]&gt; results = query.list();</span>
+
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        for (Object[] result : results) {</span>
+<span class="nc" id="L121">            int productId = (int) result[0];</span>
+<span class="nc" id="L122">            String name = (String) result[1];</span>
+<span class="nc" id="L123">            BigDecimal soldQuantity = (BigDecimal) result[2];</span>
+
+<span class="nc" id="L125">            MostSoldProductsResponse mostSoldProductsResponse = new MostSoldProductsResponse();</span>
+<span class="nc" id="L126">            mostSoldProductsResponse.setProduct_id(productId);</span>
+<span class="nc" id="L127">            mostSoldProductsResponse.setProduct_name(name);</span>
+<span class="nc" id="L128">            mostSoldProductsResponse.setSold_quantity(soldQuantity.intValue());</span>
+<span class="nc" id="L129">            mostSoldProductsResponses.add(mostSoldProductsResponse);</span>
+<span class="nc" id="L130">        }</span>
+<span class="nc" id="L131">        return mostSoldProductsResponses;</span>
+    }
+
+    @Override
+    public int getAllItemsSold() {
+<span class="nc" id="L136">        Session session = sessionFactory.openSession();</span>
+<span class="nc" id="L137">        session.beginTransaction();</span>
+
+<span class="nc" id="L139">        String sql = &quot;SELECT SUM(op.purchased_quantity)\n&quot; +</span>
+                &quot;FROM Order_Product op\n&quot; +
+                &quot;JOIN OrderTable o ON op.order_id = o.order_id\n&quot; +
+                &quot;WHERE o.order_status = 'Completed';&quot;;
+
+<span class="nc" id="L144">        SQLQuery query = session.createSQLQuery(sql);</span>
+<span class="nc" id="L145">        BigDecimal ans = (BigDecimal) query.uniqueResult();</span>
+<span class="nc" id="L146">        session.getTransaction().commit();</span>
+<span class="nc" id="L147">        session.close();</span>
+<span class="nc" id="L148">        return ans.intValue();</span>
+    }
+
+    @Override
+    public List&lt;TopThreeBuyerResponse&gt; getTop3Buyer() {
+<span class="nc" id="L153">        Session session = sessionFactory.openSession();</span>
+<span class="nc" id="L154">        session.beginTransaction();</span>
+
+<span class="nc" id="L156">        String sql = &quot;SELECT o.user_id, SUM(op.purchased_quantity * op.execution_retail_price) as money_spent\n&quot; +</span>
+                &quot;FROM OrderTable o\n&quot; +
+                &quot;JOIN Order_Product op ON o.order_id = op.order_id\n&quot; +
+                &quot;WHERE o.order_status = 'Completed'\n&quot; +
+                &quot;GROUP BY o.user_id\n&quot; +
+                &quot;ORDER BY money_spent DESC\n&quot; +
+                &quot;LIMIT 3;\n&quot;;
+
+<span class="nc" id="L164">        SQLQuery query = session.createSQLQuery(sql);</span>
+<span class="nc" id="L165">        List&lt;TopThreeBuyerResponse&gt; topThreeBuyerResponses = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L166">        List&lt;Object[]&gt; results = query.list();</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        for (Object[] result : results) {</span>
+<span class="nc" id="L168">            int user_id = (int)result[0];</span>
+<span class="nc" id="L169">            Double money_spend = (Double) result[1];</span>
+<span class="nc" id="L170">            TopThreeBuyerResponse topThreeBuyerResponse = new TopThreeBuyerResponse();</span>
+<span class="nc" id="L171">            topThreeBuyerResponse.setUser_id(user_id);</span>
+<span class="nc" id="L172">            topThreeBuyerResponse.setMoney_spend(money_spend.intValue());</span>
+<span class="nc" id="L173">            topThreeBuyerResponses.add(topThreeBuyerResponse);</span>
+<span class="nc" id="L174">        }</span>
+<span class="nc" id="L175">        return topThreeBuyerResponses;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

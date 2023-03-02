@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserPurchaseController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">shop_project_detail</a> &gt; <a href="index.source.html" class="el_package">com.example.shop_project_detail.controller</a> &gt; <span class="el_source">UserPurchaseController.java</span></div><h1>UserPurchaseController.java</h1><pre class="source lang-java linenums">package com.example.shop_project_detail.controller;
+
+
+import com.example.shop_project_detail.domain.entity.Order;
+import com.example.shop_project_detail.domain.entity.Product;
+import com.example.shop_project_detail.domain.entity.User;
+import com.example.shop_project_detail.domain.request.OrderRequest;
+import com.example.shop_project_detail.domain.response.MostPurchasedResponse;
+import com.example.shop_project_detail.domain.response.MyOrderResponse;
+import com.example.shop_project_detail.exception.NotEnoughInventoryException;
+import com.example.shop_project_detail.service.LoginService;
+import com.example.shop_project_detail.service.OrderService;
+import com.example.shop_project_detail.service.Order_ProductService;
+import com.example.shop_project_detail.service.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+
+import java.sql.Timestamp;
+import java.util.Collections;
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;user&quot;)
+public class UserPurchaseController {
+    public OrderService orderService;
+    public ProductService productService;
+    public Order_ProductService order_productService;
+    public LoginService loginService;
+
+
+    @Autowired
+<span class="fc" id="L35">    public UserPurchaseController(OrderService orderService, ProductService productService, Order_ProductService order_productService, LoginService loginService) {</span>
+<span class="fc" id="L36">        this.orderService = orderService;</span>
+<span class="fc" id="L37">        this.productService = productService;</span>
+<span class="fc" id="L38">        this.order_productService = order_productService;</span>
+<span class="fc" id="L39">        this.loginService = loginService;</span>
+<span class="fc" id="L40">    }</span>
+
+    @PostMapping(&quot;/place_order&quot;)
+    public ResponseEntity&lt;String&gt; placeOrder(@RequestBody OrderRequest request) throws NotEnoughInventoryException {
+<span class="nc" id="L44">        int order_id = orderService.findNextOrderId();</span>
+       // System.out.println(order_id);
+<span class="nc" id="L46">        int user_id = request.getUser_id();</span>
+       // System.out.println(user_id);
+<span class="nc" id="L48">        String order_status = &quot;Processing&quot;;</span>
+<span class="nc" id="L49">        Timestamp date_placed = new Timestamp(System.currentTimeMillis());</span>
+
+        // check stock quantity
+<span class="nc bnc" id="L52" title="All 2 branches missed.">        for(int i = 0; i &lt; request.getProductQuantities().size(); i++){</span>
+<span class="nc" id="L53">            int product_id = request.getProductQuantities().get(i).getProduct_id();</span>
+<span class="nc" id="L54">            int quantity = request.getProductQuantities().get(i).getQuantity();</span>
+<span class="nc" id="L55">            Product product = productService.getProductById(product_id);</span>
+            //System.out.println(product);
+<span class="nc bnc" id="L57" title="All 2 branches missed.">            if(quantity &gt; product.getStock_quantity()){</span>
+<span class="nc" id="L58">                throw new NotEnoughInventoryException(&quot;Not enough inventory for item: &quot; + product.getName());</span>
+            }
+        }
+
+<span class="nc" id="L62">        float profit = 0;</span>
+
+        // place order
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        for(int i = 0; i &lt; request.getProductQuantities().size(); i++) {</span>
+<span class="nc" id="L66">            int product_id = request.getProductQuantities().get(i).getProduct_id();</span>
+<span class="nc" id="L67">            int quantity = request.getProductQuantities().get(i).getQuantity();</span>
+<span class="nc" id="L68">            Product product = productService.getProductById(product_id);</span>
+<span class="nc" id="L69">            order_productService.addNewOrderProduct(order_id, product_id, quantity, product.getRetail_price(), product.getWholesale_price());</span>
+<span class="nc" id="L70">            profit = profit + quantity * (product.getRetail_price() - product.getWholesale_price());</span>
+<span class="nc" id="L71">            productService.updateQuantity(product_id, quantity);</span>
+        }
+
+<span class="nc" id="L74">        orderService.placeOrder(user_id, order_status, date_placed, profit);</span>
+
+
+<span class="nc" id="L77">        return ResponseEntity.ok(&quot;Order Placed, Thanks!&quot;);</span>
+    }
+
+
+    // get my placed order
+    @GetMapping(&quot;/view_my_order&quot;)
+    public ResponseEntity&lt;List&lt;MyOrderResponse&gt;&gt; getMyOrders(@RequestParam(&quot;user_id&quot;) int user_id){
+<span class="fc" id="L84">        String current_username = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();</span>
+<span class="fc" id="L85">        User user = loginService.getUserByUserId(user_id);</span>
+<span class="pc bpc" id="L86" title="3 of 4 branches missed.">        if(user == null || !user.getUsername().equals(current_username)){</span>
+<span class="fc" id="L87">            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections.emptyList());</span>
+        }
+<span class="nc" id="L89">        return ResponseEntity.status(HttpStatus.OK).body(orderService.orderDao.viewMyOrder(user_id));</span>
+    }
+
+
+    // cancel an order
+    @PostMapping(&quot;/cancel_order&quot;)
+    public ResponseEntity&lt;String&gt; cancelOrder(@RequestParam(&quot;order_id&quot;) int order_id){
+<span class="fc" id="L96">        String current_username = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();</span>
+<span class="fc" id="L97">        User user = orderService.findUserByOrderId(order_id);</span>
+<span class="pc bpc" id="L98" title="2 of 4 branches missed.">        if(user == null || !user.getUsername().equals(current_username)) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(&quot;&quot;);</span>
+<span class="fc" id="L99">        Order order = orderService.findOrderByOrderId(order_id);</span>
+<span class="pc bpc" id="L100" title="2 of 4 branches missed.">        if(order.getOrder_status().equals(&quot;Completed&quot;) || order.getOrder_status().equals(&quot;Canceled&quot;)){</span>
+<span class="nc" id="L101">            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(&quot;Cannot cancel a Completed or Canceled order!&quot;);</span>
+        }
+<span class="fc" id="L103">        orderService.cancelOrder(order_id);</span>
+<span class="fc" id="L104">        return ResponseEntity.ok().body(&quot;Order Canceled!&quot;);</span>
+    }
+
+    // top 3 most frequently purchased items
+    @GetMapping(&quot;/most_frequent_purchased&quot;)
+    public ResponseEntity&lt;List&lt;MostPurchasedResponse&gt;&gt; getMostFrequentlyPurchased(@RequestParam(&quot;user_id&quot;) int user_id){
+<span class="fc" id="L110">        String current_username = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();</span>
+<span class="fc" id="L111">        User user = loginService.getUserByUserId(user_id);</span>
+<span class="pc bpc" id="L112" title="2 of 4 branches missed.">        if(user == null || !user.getUsername().equals(current_username)){</span>
+<span class="fc" id="L113">            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections.emptyList());</span>
+        }
+<span class="nc" id="L115">        return ResponseEntity.ok().body(orderService.getMostFrequentlyPurchased(user_id));</span>
+    }
+
+    // top 3 most recently purchased items
+    @GetMapping(&quot;/most_recent_purchased&quot;)
+    public ResponseEntity&lt;List&lt;MostPurchasedResponse&gt;&gt; getMostRecentlyPurchased(@RequestParam(&quot;user_id&quot;) int user_id){
+<span class="fc" id="L121">        String current_username = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();</span>
+<span class="fc" id="L122">        User user = loginService.getUserByUserId(user_id);</span>
+<span class="pc bpc" id="L123" title="2 of 4 branches missed.">        if(user == null || !user.getUsername().equals(current_username)){</span>
+<span class="fc" id="L124">            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections.emptyList());</span>
+        }
+<span class="nc" id="L126">        return ResponseEntity.ok().body(orderService.getMostRecentlyPurchased(user_id));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

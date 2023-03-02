@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Order_ProductService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">shop_project_detail</a> &gt; <a href="index.source.html" class="el_package">com.example.shop_project_detail.service</a> &gt; <span class="el_source">Order_ProductService.java</span></div><h1>Order_ProductService.java</h1><pre class="source lang-java linenums">package com.example.shop_project_detail.service;
+
+
+import com.example.shop_project_detail.dao.Order_ProductDao;
+import com.example.shop_project_detail.domain.entity.Order_Product;
+import com.example.shop_project_detail.domain.response.MostProfitProductResponse;
+import com.example.shop_project_detail.domain.response.MostSoldProductsResponse;
+import com.example.shop_project_detail.domain.response.TopThreeBuyerResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class Order_ProductService {
+    public Order_ProductDao order_productDao;
+
+    @Autowired
+<span class="fc" id="L19">    public Order_ProductService(Order_ProductDao order_productDao) {</span>
+<span class="fc" id="L20">        this.order_productDao = order_productDao;</span>
+<span class="fc" id="L21">    }</span>
+
+    public void addNewOrderProduct(int order_id, int product_id, int purchased_quantity, float execution_retail_price, float execution_wholesale_price) {
+<span class="fc" id="L24">        order_productDao.addNewOrderProduct(order_id, product_id, purchased_quantity, execution_retail_price, execution_wholesale_price);</span>
+<span class="fc" id="L25">    }</span>
+
+    public List&lt;Order_Product&gt; findOrderProductByOrderId(int order_id) {
+<span class="fc" id="L28">        return order_productDao.findOrderProductByOrderId(order_id);</span>
+    }
+    public void removeOrderProductByOrderProductId(int order_product_id) {
+<span class="fc" id="L31">        order_productDao.removeOrderProductByOrderProductId(order_product_id);</span>
+<span class="fc" id="L32">    }</span>
+
+    public MostProfitProductResponse getMostProfitableProduct() {
+<span class="fc" id="L35">        return order_productDao.getMostProfitableProduct();</span>
+    }
+
+    public List&lt;MostSoldProductsResponse&gt; getTop3MostSoldProducts() {
+<span class="nc" id="L39">        return order_productDao.getTop3MostSoldProducts();</span>
+    }
+
+    public int getAllItemsSold() {
+<span class="nc" id="L43">        return order_productDao.getAllItemsSold();</span>
+    }
+
+    public List&lt;TopThreeBuyerResponse&gt; getTop3Buyer() {
+<span class="nc" id="L47">        return order_productDao.getTop3Buyer();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OrderService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">shop_project_detail</a> &gt; <a href="index.source.html" class="el_package">com.example.shop_project_detail.service</a> &gt; <span class="el_source">OrderService.java</span></div><h1>OrderService.java</h1><pre class="source lang-java linenums">package com.example.shop_project_detail.service;
+
+
+import com.example.shop_project_detail.dao.OrderDao;
+import com.example.shop_project_detail.domain.entity.Order;
+import com.example.shop_project_detail.domain.entity.User;
+import com.example.shop_project_detail.domain.response.MostPurchasedResponse;
+import com.example.shop_project_detail.domain.response.OrderDetailResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.sql.Timestamp;
+import java.util.List;
+
+@Service
+public class OrderService{
+    public OrderDao orderDao;
+
+    @Autowired
+<span class="fc" id="L20">    public OrderService(OrderDao orderDao) {</span>
+<span class="fc" id="L21">        this.orderDao = orderDao;</span>
+<span class="fc" id="L22">    }</span>
+
+    public int findNextOrderId() {
+<span class="fc" id="L25">        return orderDao.findNextOrderId();</span>
+    }
+
+    public void placeOrder(int user_id, String order_status, Timestamp date_placed, float profit) {
+<span class="fc" id="L29">        orderDao.placeOrder(user_id, order_status, date_placed, profit);</span>
+<span class="fc" id="L30">    }</span>
+    public List&lt;Order&gt; findOrderByUserId(int user_id) {
+<span class="fc" id="L32">        return orderDao.findOrderByUserId(user_id);</span>
+    }
+
+    public Order findOrderByOrderId(int order_id) {
+<span class="nc" id="L36">        return orderDao.findOrderByOrderId(order_id);</span>
+    }
+
+    public void cancelOrder(int order_id) {
+<span class="fc" id="L40">        orderDao.cancelOrder(order_id);</span>
+<span class="fc" id="L41">    }</span>
+
+    public void completeOrder(int order_id) {
+<span class="nc" id="L44">        orderDao.completeOrder(order_id);</span>
+<span class="nc" id="L45">    }</span>
+
+    public List&lt;MostPurchasedResponse&gt; getMostFrequentlyPurchased(int user_id) {
+<span class="fc" id="L48">        return orderDao.getMostFrequentlyPurchased(user_id);</span>
+    }
+
+    public List&lt;MostPurchasedResponse&gt; getMostRecentlyPurchased(int user_id) {
+<span class="nc" id="L52">        return orderDao.getMostRecentlyPurchased(user_id);</span>
+    }
+
+    public List&lt;Order&gt; getAllOrders() {
+<span class="nc" id="L56">        return orderDao.getAllOrders();</span>
+    }
+
+    public OrderDetailResponse getOrderByOrderId(int order_id) {
+<span class="fc" id="L60">        return orderDao.getOrderByOrderId(order_id);</span>
+    }
+
+    public User findUserByOrderId(int order_id) {
+<span class="nc" id="L64">        return orderDao.findUserByOrderId(order_id);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

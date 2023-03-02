@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OrderDaoImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">shop_project_detail</a> &gt; <a href="index.source.html" class="el_package">com.example.shop_project_detail.dao</a> &gt; <span class="el_source">OrderDaoImpl.java</span></div><h1>OrderDaoImpl.java</h1><pre class="source lang-java linenums">package com.example.shop_project_detail.dao;
+
+
+import com.example.shop_project_detail.domain.entity.Order;
+import com.example.shop_project_detail.domain.entity.Order_Product;
+import com.example.shop_project_detail.domain.entity.Product;
+import com.example.shop_project_detail.domain.entity.User;
+import com.example.shop_project_detail.domain.request.ProductQuantity;
+import com.example.shop_project_detail.domain.response.MostPurchasedResponse;
+import com.example.shop_project_detail.domain.response.MyOrderResponse;
+import com.example.shop_project_detail.domain.response.OrderDetailResponse;
+import com.example.shop_project_detail.service.Order_ProductService;
+import com.example.shop_project_detail.service.ProductService;
+import org.hibernate.*;
+import org.hibernate.criterion.Projections;
+import org.hibernate.query.Query;
+import org.hibernate.type.IntegerType;
+import org.hibernate.type.StringType;
+import org.hibernate.type.TimestampType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
+@Repository
+public class OrderDaoImpl implements OrderDao{
+    Order_ProductService order_productService;
+    ProductService productService;
+
+    @Autowired
+<span class="fc" id="L33">    public OrderDaoImpl(Order_ProductService order_productService, ProductService productService) {</span>
+<span class="fc" id="L34">        this.order_productService = order_productService;</span>
+<span class="fc" id="L35">        this.productService = productService;</span>
+<span class="fc" id="L36">    }</span>
+
+    @Autowired
+    SessionFactory sessionFactory;
+
+
+    @Override
+    public int findNextOrderId() {
+<span class="nc" id="L44">        Session session = sessionFactory.getCurrentSession();</span>
+<span class="nc" id="L45">        Criteria criteria = session.createCriteria(Order.class);</span>
+<span class="nc" id="L46">        criteria.setProjection(Projections.max(&quot;order_id&quot;));</span>
+<span class="nc bnc" id="L47" title="All 2 branches missed.">        if(criteria.uniqueResult() == null){</span>
+<span class="nc" id="L48">            return 1;</span>
+        }else{
+<span class="nc" id="L50">            return (int) criteria.uniqueResult() + 1;</span>
+        }
+    }
+
+    @Override
+    public void placeOrder(int user_id, String order_status, Timestamp date_placed, float profit) {
+<span class="nc" id="L56">        Session session = sessionFactory.getCurrentSession();</span>
+<span class="nc" id="L57">        Order order = new Order();</span>
+<span class="nc" id="L58">        order.setUser_id(user_id);</span>
+<span class="nc" id="L59">        order.setOrder_status(order_status);</span>
+<span class="nc" id="L60">        order.setDate_placed(date_placed);</span>
+<span class="nc" id="L61">        order.setProfit(profit);</span>
+<span class="nc" id="L62">        session.save(order);</span>
+<span class="nc" id="L63">    }</span>
+
+    @Override
+    public List&lt;Order&gt; findOrderByUserId(int user_id) {
+<span class="nc" id="L67">        Session session = sessionFactory.getCurrentSession();</span>
+<span class="nc" id="L68">        Query query = session.createQuery(&quot;FROM Order  WHERE user_id = :user_id&quot;);</span>
+<span class="nc" id="L69">        query.setParameter(&quot;user_id&quot;, user_id);</span>
+<span class="nc" id="L70">        List&lt;Order&gt; orders = query.list();</span>
+<span class="nc" id="L71">        return orders;</span>
+    }
+
+    @Override
+    public Order findOrderByOrderId(int order_id) {
+<span class="nc" id="L76">        Session session = sessionFactory.getCurrentSession();</span>
+<span class="nc" id="L77">        Query query = session.createQuery(&quot;FROM Order  WHERE order_id = :order_id&quot;);</span>
+<span class="nc" id="L78">        query.setParameter(&quot;order_id&quot;, order_id);</span>
+<span class="nc" id="L79">        Order order = (Order) query.uniqueResult();</span>
+<span class="nc" id="L80">        return order;</span>
+    }
+
+    @Override
+    public List&lt;MyOrderResponse&gt; viewMyOrder(int user_id) {
+<span class="nc" id="L85">        Session session = sessionFactory.getCurrentSession();</span>
+<span class="nc" id="L86">        List&lt;MyOrderResponse&gt; myOrderResponses = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L87">        List&lt;Order&gt; orders = findOrderByUserId(user_id);</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        for(int i = 0; i &lt; orders.size(); i++){</span>
+<span class="nc" id="L89">            Order order = orders.get(i);</span>
+<span class="nc" id="L90">            MyOrderResponse myOrderResponse = new MyOrderResponse();</span>
+<span class="nc" id="L91">            List&lt;Order_Product&gt; order_products = order_productService.findOrderProductByOrderId(order.getOrder_id());</span>
+<span class="nc" id="L92">            myOrderResponse.setOrder_id(order.getOrder_id());</span>
+<span class="nc" id="L93">            myOrderResponse.setOrder_status(order.getOrder_status());</span>
+<span class="nc" id="L94">            myOrderResponse.setDate_placed(order.getDate_placed());</span>
+<span class="nc" id="L95">            List&lt;ProductQuantity&gt; productQuantities = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">            for(int j = 0; j &lt; order_products.size(); j++){</span>
+<span class="nc" id="L97">                Order_Product order_product = order_products.get(j);</span>
+<span class="nc" id="L98">                ProductQuantity productQuantity = new ProductQuantity();</span>
+<span class="nc" id="L99">                productQuantity.setProduct_id(order_product.getProduct_id());</span>
+<span class="nc" id="L100">                productQuantity.setQuantity(order_product.getPurchased_quantity());</span>
+<span class="nc" id="L101">                productQuantities.add(productQuantity);</span>
+            }
+<span class="nc" id="L103">            myOrderResponse.setProductQuantityList(productQuantities);</span>
+<span class="nc" id="L104">            myOrderResponses.add(myOrderResponse);</span>
+        }
+<span class="nc" id="L106">        return myOrderResponses;</span>
+    }
+
+    @Override
+    public void cancelOrder(int order_id) {
+<span class="nc" id="L111">        Session session = sessionFactory.getCurrentSession();</span>
+<span class="nc" id="L112">        Transaction outerTransaction = session.beginTransaction();</span>
+<span class="nc" id="L113">        Order order = findOrderByOrderId(order_id);</span>
+<span class="nc" id="L114">        order.setOrder_status(&quot;Canceled&quot;);</span>
+<span class="nc" id="L115">        order.setProfit(0);</span>
+<span class="nc" id="L116">        session.update(order);</span>
+<span class="nc" id="L117">        List&lt;Order_Product&gt; order_products = order_productService.findOrderProductByOrderId(order_id);</span>
+//        for(int i = 0; i &lt; order_products.size(); i++){
+//            Order_Product order_product = order_products.get(i);
+//            //productService.updateQuantity(order_product.getProduct_id(), -order_product.getPurchased_quantity());
+//            order_productService.removeOrderProductByOrderProductId(order_product.getOrder_product_id());
+//        }
+<span class="nc" id="L123">        outerTransaction.commit();</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        for(int i = 0; i &lt; order_products.size(); i++){</span>
+<span class="nc" id="L125">            outerTransaction = session.beginTransaction();</span>
+<span class="nc" id="L126">            Order_Product order_product = order_products.get(i);</span>
+<span class="nc" id="L127">            Product product = session.get(Product.class, order_product.getProduct_id());</span>
+<span class="nc" id="L128">            product.setStock_quantity(product.getStock_quantity() + order_product.getPurchased_quantity());</span>
+<span class="nc" id="L129">            session.update(product);</span>
+<span class="nc" id="L130">            outerTransaction.commit();</span>
+        }
+<span class="nc" id="L132">    }</span>
+
+    @Override
+    public void completeOrder(int order_id) {
+<span class="nc" id="L136">        Session session = sessionFactory.getCurrentSession();</span>
+<span class="nc" id="L137">        session.beginTransaction();</span>
+<span class="nc" id="L138">        Query query = session.createQuery(&quot;FROM Order WHERE order_id = :order_id&quot;);</span>
+<span class="nc" id="L139">        query.setParameter(&quot;order_id&quot;, order_id);</span>
+<span class="nc" id="L140">        Order order = (Order) query.uniqueResult();</span>
+<span class="nc" id="L141">        order.setOrder_status(&quot;Completed&quot;);</span>
+<span class="nc" id="L142">        session.update(order);</span>
+<span class="nc" id="L143">        session.getTransaction().commit();</span>
+<span class="nc" id="L144">    }</span>
+
+    @Override
+    public List&lt;MostPurchasedResponse&gt; getMostFrequentlyPurchased(int user_id) {
+<span class="nc" id="L148">        Session session = sessionFactory.getCurrentSession();</span>
+<span class="nc" id="L149">        String sql = &quot;SELECT `OrderTable`.user_id, Product.product_id, Product.name, SUM(Order_Product.purchased_quantity) as total_quantity&quot; +</span>
+                &quot; FROM `OrderTable`&quot; +
+                &quot; JOIN Order_Product ON `OrderTable`.order_id = Order_Product.order_id&quot; +
+                &quot; JOIN Product ON Order_Product.product_id = Product.product_id&quot; +
+                &quot; WHERE `OrderTable`.user_id = :user_id AND `OrderTable`.order_status != 'Canceled' &quot; +
+                &quot; GROUP BY `OrderTable`.user_id, Product.product_id, Product.name \n&quot; +
+                &quot; ORDER BY total_quantity DESC, Product.product_id ASC&quot; +
+                &quot; LIMIT 3;&quot;;
+
+<span class="nc" id="L158">        SQLQuery query = session.createSQLQuery(sql)</span>
+<span class="nc" id="L159">                .addScalar(&quot;product_id&quot;, IntegerType.INSTANCE)</span>
+<span class="nc" id="L160">                .addScalar(&quot;name&quot;, StringType.INSTANCE)</span>
+<span class="nc" id="L161">                .addScalar(&quot;total_quantity&quot;, IntegerType.INSTANCE)</span>
+<span class="nc" id="L162">                .setParameter(&quot;user_id&quot;, user_id);</span>
+<span class="nc" id="L163">        List&lt;Object[]&gt; results = query.list();</span>
+
+<span class="nc" id="L165">        List&lt;MostPurchasedResponse&gt; mostPurchasedResponses = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        for (Object[] result : results) {</span>
+<span class="nc" id="L168">            Integer productId = (Integer) result[0];</span>
+<span class="nc" id="L169">            String name = (String) result[1];</span>
+<span class="nc" id="L170">            Integer totalQuantity = (Integer) result[2];</span>
+<span class="nc" id="L171">            MostPurchasedResponse mostPurchasedResponse = new MostPurchasedResponse();</span>
+<span class="nc" id="L172">            mostPurchasedResponse.setProduct_id(productId);</span>
+<span class="nc" id="L173">            mostPurchasedResponse.setProduct_name(name);</span>
+<span class="nc" id="L174">            mostPurchasedResponse.setQuantity(totalQuantity);</span>
+<span class="nc" id="L175">            mostPurchasedResponses.add(mostPurchasedResponse);</span>
+<span class="nc" id="L176">        }</span>
+<span class="nc" id="L177">        return mostPurchasedResponses;</span>
+    }
+
+    @Override
+    public List&lt;MostPurchasedResponse&gt; getMostRecentlyPurchased(int user_id) {
+<span class="nc" id="L182">        Session session = sessionFactory.getCurrentSession();</span>
+<span class="nc" id="L183">        String sql = &quot;SELECT OrderTable.user_id, Product.product_id, Product.name, OrderTable.date_placed &quot; +</span>
+                &quot;FROM OrderTable &quot; +
+                &quot;JOIN Order_Product ON OrderTable.order_id = Order_Product.order_id &quot; +
+                &quot;JOIN Product ON Order_Product.product_id = Product.product_id &quot; +
+                &quot;WHERE OrderTable.user_id = :user_id AND OrderTable.order_status != 'Canceled' &quot; +
+                &quot;GROUP BY OrderTable.user_id, Product.product_id, Product.name, OrderTable.date_placed &quot; +
+                &quot;ORDER BY OrderTable.date_placed DESC, Product.product_id ASC &quot; +
+                &quot;LIMIT 3&quot;;
+<span class="nc" id="L191">        SQLQuery query = session.createSQLQuery(sql)</span>
+<span class="nc" id="L192">                .addScalar(&quot;product_id&quot;, IntegerType.INSTANCE)</span>
+<span class="nc" id="L193">                .addScalar(&quot;name&quot;, StringType.INSTANCE)</span>
+<span class="nc" id="L194">                .addScalar(&quot;date_placed&quot;, TimestampType.INSTANCE)</span>
+<span class="nc" id="L195">                .setParameter(&quot;user_id&quot;, user_id);</span>
+
+
+<span class="nc" id="L198">        List&lt;Object[]&gt; results = query.list();</span>
+
+<span class="nc" id="L200">        List&lt;MostPurchasedResponse&gt; mostPurchasedResponses = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L202" title="All 2 branches missed.">        for (Object[] result : results) {</span>
+<span class="nc" id="L203">            Integer productId = (Integer) result[0];</span>
+<span class="nc" id="L204">            String name = (String) result[1];</span>
+<span class="nc" id="L205">            Timestamp datePlaced = (Timestamp) result[2];</span>
+<span class="nc" id="L206">            MostPurchasedResponse mostPurchasedResponse = new MostPurchasedResponse();</span>
+<span class="nc" id="L207">            mostPurchasedResponse.setProduct_id(productId);</span>
+<span class="nc" id="L208">            mostPurchasedResponse.setProduct_name(name);</span>
+<span class="nc" id="L209">            mostPurchasedResponse.setDate_placed(datePlaced);</span>
+<span class="nc" id="L210">            mostPurchasedResponses.add(mostPurchasedResponse);</span>
+<span class="nc" id="L211">        }</span>
+<span class="nc" id="L212">        return mostPurchasedResponses;</span>
+    }
+
+    @Override
+    public List&lt;Order&gt; getAllOrders() {
+<span class="nc" id="L217">        Session session = sessionFactory.getCurrentSession();</span>
+<span class="nc" id="L218">        Query query = session.createQuery(&quot;FROM Order&quot;);</span>
+<span class="nc" id="L219">        List&lt;Order&gt; orders = query.list();</span>
+<span class="nc" id="L220">        return orders;</span>
+     }
+
+    @Override
+    public OrderDetailResponse getOrderByOrderId(int order_id) {
+<span class="nc" id="L225">        Session session = sessionFactory.getCurrentSession();</span>
+<span class="nc" id="L226">        Order order = findOrderByOrderId(order_id);</span>
+<span class="nc" id="L227">        OrderDetailResponse orderDetailResponse = new OrderDetailResponse();</span>
+<span class="nc" id="L228">        orderDetailResponse.setOrder_id(order_id);</span>
+<span class="nc" id="L229">        orderDetailResponse.setOrder_status(order.getOrder_status());</span>
+<span class="nc" id="L230">        orderDetailResponse.setDate_placed(order.getDate_placed());</span>
+<span class="nc" id="L231">        orderDetailResponse.setUser_id(order.getUser_id());</span>
+<span class="nc" id="L232">        List&lt;ProductQuantity&gt; productQuantities = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L233">        List&lt;Order_Product&gt; order_products = order_productService.findOrderProductByOrderId(order_id);</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">        for(int i = 0; i &lt; order_products.size(); i++){</span>
+<span class="nc" id="L235">            Order_Product order_product = order_products.get(i);</span>
+<span class="nc" id="L236">            ProductQuantity productQuantity = new ProductQuantity();</span>
+<span class="nc" id="L237">            productQuantity.setProduct_id(order_product.getProduct_id());</span>
+<span class="nc" id="L238">            productQuantity.setQuantity(order_product.getPurchased_quantity());</span>
+<span class="nc" id="L239">            productQuantities.add(productQuantity);</span>
+        }
+<span class="nc" id="L241">        orderDetailResponse.setProductQuantityList(productQuantities);</span>
+<span class="nc" id="L242">        return orderDetailResponse;</span>
+    }
+
+    @Override
+    public User findUserByOrderId(int order_id) {
+<span class="nc" id="L247">        Session session = sessionFactory.getCurrentSession();</span>
+<span class="nc" id="L248">        Query query = session.createQuery(&quot;SELECT u FROM User u JOIN Order o ON u.id = o.user_id WHERE o.id = :order_id&quot;);</span>
+<span class="nc" id="L249">        query.setParameter(&quot;order_id&quot;, order_id);</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">        if(query.getSingleResult() == null){</span>
+<span class="nc" id="L251">            return null;</span>
+        }else{
+<span class="nc" id="L253">            return (User) query.getSingleResult();</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

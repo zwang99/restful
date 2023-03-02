@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">shop_project_detail</a> &gt; <a href="index.source.html" class="el_package">com.example.shop_project_detail.service</a> &gt; <span class="el_source">ProductService.java</span></div><h1>ProductService.java</h1><pre class="source lang-java linenums">package com.example.shop_project_detail.service;
+
+
+import com.example.shop_project_detail.dao.ProductDao;
+import com.example.shop_project_detail.domain.entity.Product;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class ProductService {
+    ProductDao productDao;
+
+    @Autowired
+<span class="fc" id="L16">    public ProductService(ProductDao productDao) {</span>
+<span class="fc" id="L17">        this.productDao = productDao;</span>
+<span class="fc" id="L18">    }</span>
+
+    public void addNewProduct(String name, String description, float retail_price, float wholesale_price, int stock_quantity) {
+<span class="fc" id="L21">        productDao.addNewProduct(name, description, retail_price, wholesale_price, stock_quantity);</span>
+<span class="fc" id="L22">    }</span>
+    public List&lt;Product&gt; getAllProducts() {
+<span class="fc" id="L24">        return productDao.getAllProducts();</span>
+    }
+
+    public Product getProductById(int product_id) {
+<span class="fc" id="L28">        return productDao.getProductById(product_id);</span>
+    }
+
+    public int getQuantityById(int product_id) {
+<span class="nc" id="L32">        return productDao.getQuantityById(product_id);</span>
+    }
+
+    public void updateQuantity(int product_id, int quantity) {
+<span class="fc" id="L36">        productDao.updateQuantity(product_id, quantity);</span>
+<span class="fc" id="L37">    }</span>
+
+    public void updateProduct(Product product) {
+<span class="fc" id="L40">        productDao.updateProduct(product);</span>
+<span class="fc" id="L41">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

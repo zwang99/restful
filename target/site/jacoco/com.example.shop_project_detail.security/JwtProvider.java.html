@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtProvider.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">shop_project_detail</a> &gt; <a href="index.source.html" class="el_package">com.example.shop_project_detail.security</a> &gt; <span class="el_source">JwtProvider.java</span></div><h1>JwtProvider.java</h1><pre class="source lang-java linenums">package com.example.shop_project_detail.security;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.stereotype.Component;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Component
+@PropertySource(&quot;classpath:application.properties&quot;)
+<span class="fc" id="L19">public class JwtProvider {</span>
+
+    @Value(&quot;${security.jwt.token.key}&quot;)
+    private String key;
+
+
+    // resolves the token -&gt; use the information in the token to create a userDetail object
+    public Optional&lt;AuthUserDetail&gt; resolveToken(HttpServletRequest request){
+<span class="nc" id="L27">        String prefixedToken = request.getHeader(&quot;Authorization&quot;); // extract token value by key &quot;Authorization&quot;</span>
+
+<span class="nc" id="L29">        String token = prefixedToken.substring(7); // remove the prefix &quot;Bearer &quot;</span>
+
+<span class="nc" id="L31">        Claims claims = Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody(); // decode</span>
+
+<span class="nc" id="L33">        String username = claims.getSubject();</span>
+<span class="nc" id="L34">        List&lt;LinkedHashMap&lt;String, String&gt;&gt; permissions = (List&lt;LinkedHashMap&lt;String, String&gt;&gt;) claims.get(&quot;permissions&quot;);</span>
+
+        // convert the permission list to a list of GrantedAuthority
+<span class="nc" id="L37">        List&lt;GrantedAuthority&gt; authorities = permissions.stream()</span>
+<span class="nc" id="L38">                .map(p -&gt; new SimpleGrantedAuthority(p.get(&quot;authority&quot;)))</span>
+<span class="nc" id="L39">                .collect(Collectors.toList());</span>
+
+        //return a userDetail object with the permissions the user has
+<span class="nc" id="L42">        return Optional.of(AuthUserDetail.builder()</span>
+<span class="nc" id="L43">                .username(username)</span>
+<span class="nc" id="L44">                .authorities(authorities)</span>
+<span class="nc" id="L45">                .build());</span>
+
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

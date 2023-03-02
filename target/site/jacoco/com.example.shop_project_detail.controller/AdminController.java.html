@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AdminController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">shop_project_detail</a> &gt; <a href="index.source.html" class="el_package">com.example.shop_project_detail.controller</a> &gt; <span class="el_source">AdminController.java</span></div><h1>AdminController.java</h1><pre class="source lang-java linenums">package com.example.shop_project_detail.controller;
+
+
+import com.example.shop_project_detail.domain.entity.Order;
+import com.example.shop_project_detail.domain.entity.Product;
+import com.example.shop_project_detail.domain.entity.User;
+import com.example.shop_project_detail.domain.response.MostProfitProductResponse;
+import com.example.shop_project_detail.domain.response.MostSoldProductsResponse;
+import com.example.shop_project_detail.domain.response.OrderDetailResponse;
+import com.example.shop_project_detail.domain.response.TopThreeBuyerResponse;
+import com.example.shop_project_detail.service.OrderService;
+import com.example.shop_project_detail.service.Order_ProductService;
+import com.example.shop_project_detail.service.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;admin&quot;)
+public class AdminController {
+    public OrderService orderService;
+    public ProductService productService;
+    public Order_ProductService order_productService;
+
+
+    @Autowired
+<span class="fc" id="L31">    public AdminController(OrderService orderService, ProductService productService, Order_ProductService order_productService) {</span>
+<span class="fc" id="L32">        this.orderService = orderService;</span>
+<span class="fc" id="L33">        this.productService = productService;</span>
+<span class="fc" id="L34">        this.order_productService = order_productService;</span>
+<span class="fc" id="L35">    }</span>
+
+    @PostMapping(&quot;/complete_order&quot;)
+    public String completeAnOrder(@RequestParam(&quot;order_id&quot;) int order_id){
+<span class="fc" id="L39">        Order order = orderService.findOrderByOrderId(order_id);</span>
+<span class="pc bpc" id="L40" title="1 of 4 branches missed.">        if(order.getOrder_status().equals(&quot;Canceled&quot;) || order.getOrder_status().equals(&quot;Completed&quot;)){</span>
+<span class="fc" id="L41">            return &quot;Cannot Complete a Canceled or Completed Order!&quot;;</span>
+        }
+<span class="fc" id="L43">        orderService.completeOrder(order_id);</span>
+<span class="fc" id="L44">        return &quot;Order Completed!&quot;;</span>
+    }
+
+    @GetMapping(&quot;/get_all_orders&quot;)
+    public List&lt;Order&gt; getAllOrders(){
+<span class="fc" id="L49">        return orderService.getAllOrders();</span>
+    }
+
+    // update a product
+    @PostMapping(&quot;/update_product&quot;)
+    public String updateProduct(@RequestBody Product product){
+<span class="fc" id="L55">        productService.updateProduct(product);</span>
+<span class="fc" id="L56">        return &quot;Updated Successfully&quot;;</span>
+    }
+
+    @GetMapping(&quot;/view_order&quot;)
+    public OrderDetailResponse getOrderByOrderId(@RequestParam(&quot;order_id&quot;) int order_id){
+<span class="fc" id="L61">        return orderService.getOrderByOrderId(order_id);</span>
+    }
+
+    @PostMapping(&quot;/cancel_order&quot;)
+    public ResponseEntity&lt;String&gt; cancelOrder(@RequestParam(&quot;order_id&quot;) int order_id){
+<span class="fc" id="L66">        orderService.cancelOrder(order_id);</span>
+<span class="fc" id="L67">        return ResponseEntity.ok().body(&quot;Order Canceled!&quot;);</span>
+    }
+
+    @GetMapping(&quot;/most_profit_product&quot;)
+    public MostProfitProductResponse getMostProfitProduct(){
+<span class="fc" id="L72">        return order_productService.getMostProfitableProduct();</span>
+    }
+
+    // top 3 most sold
+    @GetMapping(&quot;/top_3_most_sold&quot;)
+    public List&lt;MostSoldProductsResponse&gt; getTop3MostSold(){
+<span class="fc" id="L78">        return order_productService.getTop3MostSoldProducts();</span>
+    }
+
+    @GetMapping(&quot;/all_items_sold&quot;)
+    public int getAllItemsSold(){
+<span class="fc" id="L83">        return order_productService.getAllItemsSold();</span>
+    }
+
+    @GetMapping(&quot;/top_3_buyer&quot;)
+    public List&lt;TopThreeBuyerResponse&gt; getTop3Buyer(){
+<span class="fc" id="L88">        return order_productService.getTop3Buyer();</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
