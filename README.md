@@ -19,16 +19,24 @@
 - The seller can which product brings the most profit.
 - The seller can see which 3 products are the most popular sold(excluding canceled and ongoing order).
 
-## Screenshoots
-1. Home page
-![Image](https://github.com/zwang99/search/blob/main/images/home.png)
+## Screenshoots of some functionalities
+1. User / Seller Login
+![Image](https://github.com/zwang99/restful/blob/main/screenshots/login.png)
 
 
-2. Runtime using ElasticSearch
-![Image](https://github.com/zwang99/search/blob/main/images/elastic.png)
+2. User view all products
+![Image](https://github.com/zwang99/restful/blob/main/screenshots/user_all_products.png)
 
-3. Runtime using Hadoop generated inverted index
-![Image](https://github.com/zwang99/search/blob/main/images/hadoop.png)
+3. User view orders by user_id
+![Image](https://github.com/zwang99/restful/blob/main/screenshots/user_view_order.jpeg)
 
-## Acknowledgements
-Course project collaborate with teammate Chenhao Pan
+4. Seller get all orders
+![Image](https://github.com/zwang99/restful/blob/main/screenshots/seller_get_all_orders.png)
+
+
+5. Seller get most profit product
+![Image](https://github.com/zwang99/restful/blob/main/screenshots/seller_most_profit.png)
+
+6. Seller get top 3 sold products
+![Image](https://github.com/zwang99/restful/blob/main/screenshots/seller_top_3_sold.png)
+
